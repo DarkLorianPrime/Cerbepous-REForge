@@ -9,4 +9,7 @@ class Settings(BaseSettings):
 
     TG_TOKEN: str
 
+    API_URL: str = 'https://api.telegram.org'
+
+
 settings = Settings()
