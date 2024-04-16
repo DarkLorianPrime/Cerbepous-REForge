@@ -1,3 +1,8 @@
+import asyncio
+from typing import List
+
+from pydantic import TypeAdapter
+
 from dependencies.pydantic_models.telegram_objects import Message
 from dependencies.vixengram.aiohttpx import client
 from utils.url import url_compiler
@@ -18,13 +23,15 @@ class LongPoll:
         return response.json()["result"]
 
     async def listen(self):
+        await asyncio.sleep(3)
         result = await self.get_updates()
 
         if not result:
             return
 
-        last_message = result[0]
+        last_message = result[-1]
         update_id = last_message["update_id"]
 
         self.actual_update_id = update_id + 1
-        return Message.model_validate(result[0])
+        ta = TypeAdapter(List[Message])
+        return ta.validate_python(result)

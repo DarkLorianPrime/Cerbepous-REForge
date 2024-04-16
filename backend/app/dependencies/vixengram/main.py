@@ -16,14 +16,16 @@ class VixenGram:
         """
         lp = LongPoll()
         while True:
-            message = await lp.listen()
-            if not message:
+            messages = await lp.listen()
+
+            if not messages:
                 continue
 
             if not isinstance(self.__main_router, Router):
                 raise AttributeError('Main router need `Router` type.')
 
-            await self.__main_router.call_handler(message)
+            for message in messages:
+                await self.__main_router.call_handler(message)
 
     def add_router(self, router: 'Router'):
         self.__main_router = router
