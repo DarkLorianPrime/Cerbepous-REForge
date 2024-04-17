@@ -1,6 +1,6 @@
 import abc
 
-from dependencies.vixengram.backends.internationalizations.base import BaseLocalizationBackend
+from dependencies.vixengram.internationalization.backend.base import BaseLocalizationBackend
 
 
 class SessionBackend(BaseLocalizationBackend, metaclass=abc.ABCMeta):
