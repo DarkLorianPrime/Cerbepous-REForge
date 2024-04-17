@@ -1,12 +1,21 @@
 from dependencies.vixengram.api import TelegramAPI
+from dependencies.vixengram.internationalization.i18n import I18N
 from dependencies.vixengram.longpoll import LongPoll
 from dependencies.vixengram.routing import Router
-from settings import settings
+try:
+    from settings import settings
+except ImportError:
+    from dependencies.vixengram.settings import settings
 
 
 class VixenGram:
-    def __init__(self, token: str = None):
+    def __init__(
+            self,
+            token: str = None,
+            i18n: I18N = None
+    ):
         self.__token = token or settings.TG_TOKEN
+        self.i18n = i18n
         self.__main_router = None
         self.api = TelegramAPI()
 
