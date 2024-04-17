@@ -1,11 +1,10 @@
 import inspect
 from collections import defaultdict
 from functools import wraps
-from typing import Callable, Coroutine, Dict, List, Optional
+from typing import Callable, Coroutine, Dict, List
 
 from pydantic import BaseModel
 
-from dependencies.vixengram.api import BotAPI
 from dependencies.vixengram.filters.base import FilterObject
 
 
@@ -21,11 +20,10 @@ class Router:
         """
         self.__title = title
         self.__tags = tags
-        self.__paths: Dict[Callable, List[FilterObject]] = defaultdict(list)
         self.__included_routers: List['Router'] = []
-        self.__paths_with_included: Dict[Callable, List[FilterObject]] = self.__paths.copy()
+        self.__paths_with_included: Dict[Callable, List[FilterObject]] = defaultdict(list)
         # todo: add Middleware class
-        self.__middlewares: List = []
+        # self.__middlewares: List = []
 
     # async def __call_middlewares(self, handler: Optional[Callable] = None, input_object: Optional[BaseModel] = None):
     #     for middleware in self.__middlewares:
@@ -35,22 +33,25 @@ class Router:
     #         if handler in router:
     #             await router.__call_middlewares(input_object=input_object)
 
+    async def set_parameters(self, parameters, need_parameters, input_object):
+        for need_param, annotation in need_parameters.items():
+            if annotation.annotation:
+                parameters[need_param] = annotation.annotation(input_object)
+
+        return parameters
+
     async def call_handler(self, input_object: BaseModel):
         for handler, filters in self.__paths_with_included.items():
             for filter_ in filters:
-                if filter_ is None or filter_.condition_request(input_object):
+                if filter_ is not None and not filter_.condition_request(input_object):
+                    continue
                     # await self.__call_middlewares(handler=handler, input_object=input_object)
-
-                    parameters = {}
-                    need_parameters = inspect.signature(handler).parameters
-                    for need_param in need_parameters:
-                        # todo: add dynamic arguments
-                        if "bot" in need_param:
-                            parameters["bot"] = BotAPI(input_object)
-                    await handler(**parameters)
+                parameters = {}
+                need_parameters = inspect.signature(handler).parameters
+                await self.set_parameters(parameters, need_parameters, input_object)
+                await handler(**parameters)
 
     def add_route(self, filter_: FilterObject, handler: Callable[..., Coroutine]) -> None:
-        self.__paths[handler].append(filter_)
         self.__paths_with_included[handler].append(filter_)
 
     def message(self, filter_: FilterObject | None = None):
@@ -66,4 +67,4 @@ class Router:
 
     def include_router(self, router: 'Router'):
         self.__included_routers.append(router)
-        self.__paths_with_included.update(router.__paths)
+        self.__paths_with_included.update(router.__paths_with_included)
