@@ -2,6 +2,8 @@ from dependencies.vixengram.api import TelegramAPI
 from dependencies.vixengram.internationalization.i18n import I18N
 from dependencies.vixengram.longpoll import LongPoll
 from dependencies.vixengram.routing import Router
+from dependencies.vixengram.settings import routing_logger
+
 try:
     from settings import settings
 except ImportError:
@@ -34,6 +36,11 @@ class VixenGram:
                 raise AttributeError('Main router need `Router` type.')
 
             for message in messages:
+                routing_logger.info(
+                    "ACCESS: %s - chat_id: %s",
+                    message.message.date.strftime('%Y-%m-%d %H:%M:%S'),
+                    message.message.chat.id
+                )
                 await self.__main_router.call_handler(message)
 
     def add_router(self, router: 'Router'):
