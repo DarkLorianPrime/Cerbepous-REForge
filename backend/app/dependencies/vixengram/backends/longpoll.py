@@ -5,11 +5,14 @@ from pydantic import TypeAdapter
 
 from dependencies.pydantic_models.telegram_objects import Message
 from dependencies.vixengram.aiohttpx import client
+from dependencies.vixengram.settings import core_logger
 from utils.url import url_compiler
 
 
 class LongPoll:
     def __init__(self):
+        core_logger.warning("Longpoll method is not optimal and optimized for telegram, please, "
+                            "use webhooks (callback). With this method VixenApiDoc does not available.")
         self.actual_update_id = None
         self.update_url = url_compiler('getUpdates')
 
