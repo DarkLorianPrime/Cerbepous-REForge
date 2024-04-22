@@ -12,4 +12,3 @@ class BaseLocalizationBackend(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     async def get_localization(self, chat_id: int):
         raise NotImplementedError("Get localization is not implemented")
-
