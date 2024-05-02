@@ -4,7 +4,7 @@ from vixengram.keyboards.common_keyboard import CommonKeyboard
 from vixengram.keyboards.inline_keyboard import InlineKeyboard
 from vixengram.pydantic_models.telegram import Message
 from vixengram.aiohttpx import client
-from vixengram.settings import api_logger, debug_logger
+from vixengram.settings import api_logger
 from vixengram.utils.url import url_compiler
 
 
@@ -20,7 +20,8 @@ class TelegramAPI:
             raise Exception("Method not passed")
 
         url: str = url_compiler(self.__method)
-        if "sendMessage" in url:
+
+        if kwargs.get("text") is not None:
             kwargs["text"] = kwargs["text"].replace("\\n", "\n")
 
         response = await client.get(url, params=kwargs)
@@ -33,7 +34,7 @@ class BotAPI:
         self.__message = message_object.message
         self.__api = TelegramAPI()
 
-    async def answer(self, text: str, reply_markup: InlineKeyboard | CommonKeyboard = None) -> None:
+    async def answer(self, text: str, reply_markup: InlineKeyboard | CommonKeyboard | None = None) -> None:
         body = {
             "text": text,
             "chat_id": self.__message.chat.id
@@ -43,8 +44,7 @@ class BotAPI:
                 body["reply_markup"] = reply_markup
             else:
                 body["reply_markup"] = await reply_markup.get_keyboard()
-        debug_logger.critical(body)
-        debug_logger.critical(await self.__api.sendMessage(**body))
+        await self.__api.sendMessage(**body)
 
     async def reply(self, text: str, reply_message_id: int | None = None) -> None:
         if reply_message_id is None:
@@ -60,4 +60,21 @@ class BotAPI:
         await self.__api.sendAnimation(
             chat_id=self.__message.chat.id,
             animation=animation_url
+        )
+
+    async def edit_message(self, text: str, reply_markup: InlineKeyboard | CommonKeyboard | None = None) -> None:
+        body = {
+            "text": text,
+            "chat_id": self.__message.chat.id,
+            "message_id": self.__message.message_id
+        }
+
+        if reply_markup is not None:
+            if isinstance(reply_markup, str):
+                body["reply_markup"] = reply_markup
+            else:
+                body["reply_markup"] = await reply_markup.get_keyboard()
+
+        await self.__api.editMessageText(
+            **body
         )
