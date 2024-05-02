@@ -6,4 +6,4 @@ class MessageObject:
         self.message = message.message
 
     def __getattr__(self, item):
-        return self.message[item]
+        return getattr(self.message, item, None)
