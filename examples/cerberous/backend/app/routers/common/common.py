@@ -1,7 +1,7 @@
 from vixengram.internationalization.i18n import ProxyLanguage
 
-from examples.cerberous.backend.app.routers.common.texts import Texts
-from vixengram.api import BotAPI, TelegramAPI
+from routers.common.urls import Urls
+from vixengram.api import BotAPI
 from vixengram.filters.command import CommandFilter
 from vixengram.keyboards.buttons import KeyboardButton
 from vixengram.keyboards.inline_keyboard import InlineKeyboard
@@ -13,7 +13,7 @@ router = Router(
 )
 
 
-@router.message(CommandFilter("кто"))
+@router.message(CommandFilter(["кто", "who"]))
 async def who_me(bot: BotAPI, message: MessageObject):
     string = f"Я думаю, ты - {message.from_.first_name} {message.from_.last_name}, бяка!"
     await bot.answer(string)
@@ -21,15 +21,19 @@ async def who_me(bot: BotAPI, message: MessageObject):
 
 @router.message(CommandFilter("start"))
 async def start(bot: BotAPI, lang: ProxyLanguage):
-    await bot.send_animation(animation_url=Texts.animation_url)
+    await bot.send_animation(animation_url=Urls.animation_url)
     await bot.answer(await lang("common.start_text"))
 
 
 @router.message(CommandFilter("help"))
-async def help_menu(bot: BotAPI):
+async def help_menu(bot: BotAPI, lang: ProxyLanguage):
     kb = InlineKeyboard()
-    await kb.row(KeyboardButton("Open help", "help_menu"))
-    await bot.answer(text="Help menu:", reply_markup=kb)
+    await kb.row(KeyboardButton(await lang("common.open_help_menu"), "help_menu"))
+    await kb.row(
+        KeyboardButton(await lang("common.help_ru"), "lang_to_ru"),
+        KeyboardButton(await lang("common.help_en"), "lang_to_en")
+    )
+    await bot.answer(text=await lang("common.help_menu"), reply_markup=kb)
 
 
 @router.message(CommandFilter("mediasoft"))
