@@ -12,11 +12,11 @@ services:
     build: backend
     volumes:
       - "./backend/app:/application"
+      - "../../dist:/packages:ro"
     environment:
       <<: [*x-postgres-environment]
       TG_TOKEN: ${TG_TOKEN}
       DEBUG: ${DEBUG}
-    command: python main.py
     ports:
       - "8090:8090"
 
