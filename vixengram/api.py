@@ -52,3 +52,9 @@ class BotAPI:
             text=text,
             reply_to_message_id=reply_message_id,
         )
+
+    async def send_animation(self, animation_url: str) -> None:
+        await self.__api.sendAnimation(
+            chat_id=self.__message.chat.id,
+            animation=animation_url
+        )
