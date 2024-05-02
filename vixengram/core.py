@@ -1,22 +1,24 @@
 from importlib.util import find_spec
 
 from vixengram.api import TelegramAPI
+from vixengram.backends.webhooks import WebHook, delete_webhook
 from vixengram.internationalization.i18n import I18N
 from vixengram.backends.longpoll import LongPoll
 from vixengram.routing import Router
 from vixengram.settings import routing_logger
 from vixengram.vixenapi.core import VixenAPIGenerator
+from aiohttp import web
 
 from vixengram.settings import settings as private_settings
 
 
 class VixenGram:
     def __init__(
-        self,
-        token: str,
-        title: str = "Example App",
-        version: str = "0.0.1",
-        i18n: I18N | None = None,
+            self,
+            token: str,
+            title: str = "Example App",
+            version: str = "0.0.1",
+            i18n: I18N | None = None,
     ):
         self.title: str = title
         self.version: str = version
@@ -25,6 +27,17 @@ class VixenGram:
         self.i18n: I18N | None = i18n
         self.__main_router: Router | None = None
         self.api = TelegramAPI()
+
+    async def webhook(self, host: str, port: int, webhook_url: str) -> None:
+        wh = WebHook(webhook_url)
+        await wh.set_webhook()
+
+        if not isinstance(self.__main_router, Router):
+            raise AttributeError("Main router need `Router` type.")
+
+        wh.app["main_router"] = self.__main_router
+        await web._run_app(wh.app, host=host, port=port)
+        delete_webhook()
 
     async def polling(self) -> None:
         """
