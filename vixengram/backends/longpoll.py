@@ -38,9 +38,15 @@ class LongPoll:
         update_id = last_message["update_id"]
 
         self.actual_update_id = update_id + 1
-        ta = TypeAdapter(List[Message])
+        ta_message = TypeAdapter(Message)
+        ta_callback = TypeAdapter(CallbackQueryEvent)
 
-        if result[0].get("callback_query"):
-            ta = TypeAdapter(List[CallbackQueryEvent])
+        result_events = []
+        for event in result:
+            ta = ta_message
+            if event.get("callback_query"):
+                ta = ta_callback
 
-        return ta.validate_python(result)
+            result_events.append(ta.validate_python(event))
+
+        return result_events
