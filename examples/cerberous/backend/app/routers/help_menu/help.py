@@ -10,8 +10,7 @@ router = Router(
 )
 
 
-@router.message(F.data == "help_menu")
-async def open_help_menu(bot: BotAPI, lang: ProxyLanguage):
+async def generate_help_kb(lang: ProxyLanguage):
     kb = InlineKeyboard()
     await kb.row(
         KeyboardButton(text=await lang("help.menu.who"), callback_data="help_who"),
@@ -28,4 +27,39 @@ async def open_help_menu(bot: BotAPI, lang: ProxyLanguage):
         KeyboardButton(text=await lang("help.menu.exit"), callback_data="help_exit"),
     )
 
-    await bot.answer(text=await lang("common.help_menu"), reply_markup=kb)
+    return kb
+
+
+@router.message(F.data == "help_menu")
+async def open_help_menu(bot: BotAPI, lang: ProxyLanguage):
+    await bot.edit_message(text=await lang("common.help_menu"), reply_markup=await generate_help_kb(lang))
+
+
+@router.message(F.data == "help_who")
+async def help_menu_button_who(bot: BotAPI, lang: ProxyLanguage):
+    await bot.edit_message(text=await lang("help.text.who"), reply_markup=await generate_help_kb(lang))
+
+
+@router.message(F.data == "help_start")
+async def help_menu_button_start(bot: BotAPI, lang: ProxyLanguage):
+    await bot.edit_message(text=await lang("help.text.start"), reply_markup=await generate_help_kb(lang))
+
+
+@router.message(F.data == "help_about_me")
+async def help_menu_button_about_me(bot: BotAPI, lang: ProxyLanguage):
+    await bot.edit_message(text=await lang("help.text.aboutme"), reply_markup=await generate_help_kb(lang))
+
+
+@router.message(F.data == "help_about_creator")
+async def help_menu_button_creator(bot: BotAPI, lang: ProxyLanguage):
+    await bot.edit_message(text=await lang("help.text.creator"), reply_markup=await generate_help_kb(lang))
+
+
+@router.message(F.data == "help_mediasoft")
+async def help_menu_button_mediasoft(bot: BotAPI, lang: ProxyLanguage):
+    await bot.answer(text=await lang("common.mediasoft_info"))
+
+
+@router.message(F.data == "help_exit")
+async def help_menu_button_exit(bot: BotAPI, lang: ProxyLanguage):
+    await bot.edit_message(text=await lang("help.exit"))
