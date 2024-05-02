@@ -1,4 +1,4 @@
-from typing import Any, Literal
+from typing import Any
 
 from vixengram.keyboards.common_keyboard import CommonKeyboard
 from vixengram.keyboards.inline_keyboard import InlineKeyboard
@@ -20,6 +20,9 @@ class TelegramAPI:
             raise Exception("Method not passed")
 
         url: str = url_compiler(self.__method)
+        if "sendMessage" in url:
+            kwargs["text"] = kwargs["text"].replace("\\n", "\n")
+
         response = await client.get(url, params=kwargs)
         api_logger.debug("API response: %s", response)
         return response.json()
