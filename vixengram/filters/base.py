@@ -75,7 +75,7 @@ class FilterObject(OperatorsMixin):
         operator_result: bool = True
 
         if object_get is None:
-            raise ValueError(f"Filter '{self.name}' does not exist in passed object")
+            return
 
         if self.operator is not None:
             operator_result = self.operator(self.value, object_get)
