@@ -27,7 +27,7 @@ class LongPoll:
 
         return result["result"]
 
-    async def listen(self) -> List[Message] | List[CallbackQueryEvent] | None:
+    async def listen(self) -> List[Message | CallbackQueryEvent] | None:
         await asyncio.sleep(3)
         result: List[Dict[str, Any]] = await self.get_updates()
 
@@ -43,7 +43,7 @@ class LongPoll:
 
         result_events = []
         for event in result:
-            ta = ta_message
+            ta: TypeAdapter[Message] | TypeAdapter[CallbackQueryEvent] = ta_message
             if event.get("callback_query"):
                 ta = ta_callback
 
