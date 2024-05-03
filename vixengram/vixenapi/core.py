@@ -19,14 +19,14 @@ class VixenAPIGenerator:
         self.title: str = title
         self.version: str = version
         self.routers: T = routers
-        self.json: Dict[str, Dict[str, Any]] = {}
+        self.json: Dict[str, Dict[str, Any] | List[Dict[str, Any]] | str] = {}
 
-    def generate_json(self):
+    def generate_json(self) -> dict:
         self.json.update(
             {
                 "title": self.title,
                 "version": self.version,
-                "routes": {**self.get_routers()},
+                "routes": self.get_routers(),
             }
         )
         return self.json
@@ -43,9 +43,9 @@ class VixenAPIGenerator:
 
     def _generate_filter_dict(self, filter_: FilterObject) -> Dict[str, Any]:
         return {
-            "name": filter_.name,
+            "name": filter_.name if filter_.name != "data" else "CallbackData",
             "operator": self._get_operator_type(filter_.operator),
-            "value": filter_.value,
+            "value": [filter_.value] if not isinstance(filter_.value, list) else filter_.value,
             "command_param": filter_.need_args,
         }
 
@@ -75,6 +75,7 @@ class VixenAPIGenerator:
                 continue
 
             routes[fn_name] = {
+                "name": fn_name,
                 "router": router_title,
                 "filters": [self._generate_filter_dict(filter_)],
                 "function_arguments": self._extract_arguments(function),
@@ -82,12 +83,12 @@ class VixenAPIGenerator:
 
         return routes
 
-    def get_routers(self) -> Dict[str, Any]:
+    def get_routers(self) -> List[Dict[str, Any]]:
         if not self.routers:
-            return {}
+            return []
 
-        return {
-            route_name: route_data
+        return [
+            route_data
             for router in self.routers
             for route_name, route_data in self._get_routes_from_router(router).items()
-        }
+        ]
