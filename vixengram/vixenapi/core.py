@@ -21,7 +21,7 @@ class VixenAPIGenerator:
         self.routers: T = routers
         self.json: Dict[str, Dict[str, Any] | List[Dict[str, Any]] | str] = {}
 
-    def generate_json(self) -> dict:
+    def generate_json(self) -> Dict[str, Dict[str, Any] | List[Dict[str, Any]] | str]:
         self.json.update(
             {
                 "title": self.title,
