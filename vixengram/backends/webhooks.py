@@ -1,6 +1,7 @@
 import atexit
-import json
 
+import aiohttp_jinja2
+import jinja2
 from aiohttp import web
 import re
 
@@ -27,20 +28,22 @@ class WebHook:
         self.app = web.Application()
         path = get_path.search(webhook_url)
         route_path = "/" + "" if path is None else path.group(1)
-        self.app.router.add_post(route_path, self.handler)
+        self.app.router.add_post(route_path, self.webhook_handler)
+        self.app.router.add_get("/docs", self.vixenapi_handler)
+        aiohttp_jinja2.setup(self.app, enable_async=True,
+                             loader=jinja2.PackageLoader("vixengram", "vixenapi/templates"))
 
     async def set_webhook(self):
         webhook_url = url_compiler("setWebhook")
         await client.post(webhook_url, params={"url": self.__webhook_url})
 
     async def json_to_pydantic(self, json_object: dict):
-        routing_logger.critical(json.dumps(json_object, indent=4))
         if json_object.get("callback_query"):
             return CallbackQueryEvent.model_validate(json_object)
 
         return Message.model_validate(json_object)
 
-    async def handler(self, request: Request) -> web.Response:
+    async def webhook_handler(self, request: Request) -> web.Response:
         message_json = await request.json()
         message = await self.json_to_pydantic(message_json)
 
@@ -54,3 +57,11 @@ class WebHook:
         )
         await request.app["main_router"].call_handler(message)
         return web.Response(status=200)
+
+    async def vixenapi_handler(self, request: Request) -> web.Response:
+        response = await aiohttp_jinja2.render_template_async(
+            'documentation.jinja2',
+            request,
+            self.app["api_schema"]
+        )
+        return response
