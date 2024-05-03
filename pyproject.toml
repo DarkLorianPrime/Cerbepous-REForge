@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "vixengram"
-version = "0.8.8.dev16"
+version = "0.9.7"
 description = "Telegram API project with generating documentation, middlewares, blackjack and coffe."
 authors = [
     "Alexander Kasimov <kasimov.alexander.ul@gmail.com>",

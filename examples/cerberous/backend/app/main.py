@@ -11,11 +11,16 @@ from vixengram.core import VixenGram
 app = VixenGram(token=settings.TG_TOKEN, i18n=i18n())
 main_router = Router()
 
-
 if __name__ == "__main__":
     main_router.include_router(common_router)
     main_router.include_router(translate_router)
     main_router.include_router(help_router)
     app.add_router(main_router)
     app.generate_api()
-    asyncio.run(app.polling())
+    asyncio.run(
+        app.webhook(
+            webhook_url="https://e4ac-94-181-22-195.ngrok-free.app/",
+            host="0.0.0.0",
+            port=8090
+        )
+    )
